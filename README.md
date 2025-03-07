@@ -1,6 +1,6 @@
-Data Structures in C++
+# Data Structures in C++
 
-This repository contains a collection of data structure implementations in C++, including common and advanced structures. Each structure is implemented in a separate header file, providing modular and reusable solutions. It includes:
+### This repository contains a collection of data structure implementations in C++, including common and advanced structures. Each structure is implemented in a separate header file, providing modular and reusable solutions. It includes:
 
     Arrays
     Stacks
