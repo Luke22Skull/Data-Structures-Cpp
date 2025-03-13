@@ -50,14 +50,14 @@ public:
         return index == size;
     }
 
-    int nextValue(int index) const {
+    T nextValue(int index) const {
         if (index < 0 || index >= size) {
             throw out_of_range("Index error");
         }
         return array[index + 1];
     }
 
-    int previousValue(int index) const {
+    T previousValue(int index) const {
         if (index <= 0 || index > size) {
             throw out_of_range("Index error");
         }
