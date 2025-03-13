@@ -4,121 +4,135 @@
 #include <iostream>
 #include <stdexcept>
 #include "ArrList.h"
+
 using namespace std;
 
-class ArrBinTree {
+class ArrayBinaryTree {
 private:
-    ArrList<std::pair<int, bool>> nodi;
+    ArrList<std::pair<int, bool>> nodes; // List of nodes
 
 public:
-    ArrBinTree() {}
+    // Constructor
+    ArrayBinaryTree() {}
 
+    // Check if the tree is empty
     bool isEmptyTree() const {
-        return nodi.listavuota();
+        return nodes.isEmptyList();
     }
 
-    bool isEmptyDx(int posizione) const {
-        int dx = 2 * posizione + 2;
-        return dx >= nodi.getSize() || !nodi.leggilista(dx).second;
+    // Check if the right child is empty
+    bool isEmptyRight(int position) const {
+        int right = 2 * position + 2;
+        return right >= nodes.getSize() || !nodes.readValueAtIndex(right).second;
     }
 
-    bool isEmptySx(int posizione) const {
-        int sx = 2 * posizione + 1;
-        return sx >= nodi.getSize() || !nodi.leggilista(sx).second;
+    // Check if the left child is empty
+    bool isEmptyLeft(int position) const {
+        int left = 2 * position + 1;
+        return left >= nodes.getSize() || !nodes.readValueAtIndex(left).second;
     }
 
-    bool isEmptyNode(int posizione) const {
-        return isEmptyDx(posizione) && isEmptySx(posizione);
+    // Check if the node is empty
+    bool isEmptyNode(int position) const {
+        return isEmptyRight(position) && isEmptyLeft(position);
     }
 
-    void setNodeData(int posizione, int valore) {
-        if (posizione < 0 || posizione >= nodi.getSize()) {
-            throw std::out_of_range("Posizione non valida");
+    // Set the data of a node
+    void setNodeData(int position, int value) {
+        if (position < 0 || position >= nodes.getSize()) {
+            throw std::out_of_range("Invalid position");
         }
-        nodi.scrivilista({valore, true}, posizione);
+        nodes.writeValue({value, true}, position);
     }
 
+    // Get the root value
     int getRoot() const {
-        if (isEmptyTree()) throw std::runtime_error("Albero vuoto");
-        return nodi.leggilista(0).first;
+        if (isEmptyTree()) throw std::runtime_error("Tree is empty");
+        return nodes.readValueAtIndex(0).first;
     }
 
-    void insertFather(int valore) {
-        nodi.inslista({valore, true}, 0);
+    // Insert the root node
+    void insertRoot(int value) {
+        nodes.insertValue({value, true}, 0);
     }
 
-    void insertChildDx(int posizione, int valore) {
-        int dx = 2 * posizione + 2;
-        if (dx >= MAX_SIZE) throw std::out_of_range("Fuori dai limiti");
-        nodi.inslista({valore, true}, dx);
+    // Insert the right child
+    void insertRightChild(int position, int value) {
+        int right = 2 * position + 2;
+        if (right >= MAX_SIZE) throw std::out_of_range("Out of bounds");
+        nodes.insertValue({value, true}, right);
     }
 
-    void insertChildSx(int posizione, int valore) {
-        int sx = 2 * posizione + 1;
-        if (sx >= MAX_SIZE) throw std::out_of_range("Fuori dai limiti");
-        nodi.inslista({valore, true}, sx);
+    // Insert the left child
+    void insertLeftChild(int position, int value) {
+        int left = 2 * position + 1;
+        if (left >= MAX_SIZE) throw std::out_of_range("Out of bounds");
+        nodes.insertValue({value, true}, left);
     }
 
-    void uniteTrees(ArrBinTree& T1, ArrBinTree& T2) {
-        nodi.inslista({0, true}, 0);
-        insertChildSx(0, T1.getRoot());
-        insertChildDx(0, T2.getRoot());
+    // Unite two trees
+    void uniteTrees(ArrayBinaryTree& T1, ArrayBinaryTree& T2) {
+        nodes.insertValue({0, true}, 0);
+        insertLeftChild(0, T1.getRoot());
+        insertRightChild(0, T2.getRoot());
     }
 
-    void deleteSubBinTree(int posizione) {
-        if (posizione < 0 || posizione >= nodi.getSize()) return;
-        nodi.scrivilista({nodi.leggilista(posizione).first, false}, posizione);
-        deleteSubBinTree(2 * posizione + 1);
-        deleteSubBinTree(2 * posizione + 2);
+    // Delete a subtree
+    void deleteSubTree(int position) {
+        if (position < 0 || position >= nodes.getSize()) return;
+        nodes.writeValue({nodes.readValueAtIndex(position).first, false}, position);
+        deleteSubTree(2 * position + 1);
+        deleteSubTree(2 * position + 2);
     }
 
+    // Print the tree
     void printTree() const {
         if (isEmptyTree()) {
-            std::cout << "L'albero è vuoto." << std::endl;
+            std::cout << "The tree is empty." << std::endl;
             return;
         }
-
         cout << endl;
-        int livello = 0;
-        int elementiLivello = 1;
+        int level = 0;
+        int elementsAtLevel = 1;
         int i = 0;
-        while (i < nodi.getSize()) {
-            // Stampa l'indentazione per il livello corrente
-            int indentazione = (1 << (livello + 1)) - 1;
-            for (int k = 0; k < indentazione; ++k) {
+        while (i < nodes.getSize()) {
+            // Print indentation for the current level
+            int indentation = (1 << (level + 1)) - 1;
+            for (int k = 0; k < indentation; ++k) {
                 std::cout << " ";
             }
-            for (int j = 0; j < elementiLivello && i < nodi.getSize(); ++j, ++i) {
-                auto nodo = nodi.leggilista(i);
-                if (nodo.second) {
-                    std::cout << nodo.first;
+            for (int j = 0; j < elementsAtLevel && i < nodes.getSize(); ++j, ++i) {
+                auto node = nodes.readValueAtIndex(i);
+                if (node.second) {
+                    std::cout << node.first;
                 } else {
-                    std::cout << "X"; // Indica un nodo vuoto
+                    std::cout << "X"; // Indicates an empty node
                 }
-                // Stampa spazi tra i nodi dello stesso livello
-                int spaziTraNodi = (1 << (livello + 2)) - 1;
-                for (int k = 0; k < spaziTraNodi; ++k) {
+                // Print spaces between nodes at the same level
+                int spacesBetweenNodes = (1 << (level + 2)) - 1;
+                for (int k = 0; k < spacesBetweenNodes; ++k) {
                     std::cout << " ";
                 }
             }
             std::cout << std::endl;
-            livello++;
-            elementiLivello = 1 << livello; // 2^livello
+            level++;
+            elementsAtLevel = 1 << level; // 2^level
         }
     }
 
-    int getFather(int posizione) const {
-        if (posizione < 0 || posizione >= nodi.getSize()) {
-            throw std::out_of_range("Posizione non valida");
+    // Get the parent of a node
+    int getParent(int position) const {
+        if (position < 0 || position >= nodes.getSize()) {
+            throw std::out_of_range("Invalid position");
         }
-        if (posizione == 0) {
-            throw std::runtime_error("Il nodo radice non ha un padre");
+        if (position == 0) {
+            throw std::runtime_error("The root node has no parent");
         }
-        int padrePos = (posizione - 1) / 2;
-        if (!nodi.leggilista(padrePos).second) {
-            throw std::runtime_error("Il nodo padre non esiste");
+        int parentPos = (position - 1) / 2;
+        if (!nodes.readValueAtIndex(parentPos).second) {
+            throw std::runtime_error("The parent node does not exist");
         }
-        return nodi.leggilista(padrePos).first;
+        return nodes.readValueAtIndex(parentPos).first;
     }
 };
 

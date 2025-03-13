@@ -4,22 +4,25 @@
 #include <iostream>
 #include <stdexcept>
 
-const int MAX_SIZE = 100;
+const int MAX_SIZE = 100; // Maximum size of the stack
 
-// PILA - Array
+// STACK - Array
 template <typename T>
-class Array_Stack {
+class ArrayStack {
 private:
-    T data[MAX_SIZE];
-    int top;
+    T data[MAX_SIZE]; // Array to hold stack elements
+    int top; // Index of the top element
 
 public:
-    Array_Stack() : top(-1) {}
+    // Constructor: initialize top to -1 indicating an empty stack
+    ArrayStack() : top(-1) {}
 
+    // Check if the stack is empty
     bool isEmptyStack() {
         return top == -1;
     }
 
+    // Read the top element of the stack
     T readStack() {
         if (!isEmptyStack())
             return data[top];
@@ -27,6 +30,7 @@ public:
             throw std::out_of_range("Stack is empty");
     }
 
+    // Push a new element onto the stack
     void pushStack(T element) {
         if (top < MAX_SIZE - 1) {
             data[++top] = element;
@@ -35,6 +39,7 @@ public:
         }
     }
 
+    // Pop the top element from the stack
     void popStack() {
         if (!isEmptyStack()) {
             --top;
