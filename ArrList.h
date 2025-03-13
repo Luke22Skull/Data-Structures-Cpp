@@ -6,7 +6,7 @@
 const int MAX_SIZE = 100;
 using namespace std;
 
-// LISTA - Array
+// LIST - Array
 template <typename T>
 class ArrList {
 private:
@@ -16,76 +16,76 @@ private:
 public:
     ArrList() : size(0) {}
     ~ArrList() {
-        while (!listavuota())
-            canclista(0);
+        while (!isEmptyList())
+            deleteList(0);
     }
 
     int getSize() const {
         return size;
     }
 
-    bool listavuota() const {
+    bool isEmptyList() const {
         return size == 0;
     }
 
-    T leggilista(int posizione) const {
-        if (posizione < 0 || posizione >= size) {
-            throw out_of_range("Posizione non valida");
+    T readValueAtIndex(int index) const {
+        if (index < 0 || index >= size) {
+            throw out_of_range("Index error");
         }
-        return array[posizione];
+        return array[index];
     }
 
-    void scrivilista(T elemento, int posizione) {
-        if (posizione < 0 || posizione >= size) {
-            throw out_of_range("Posizione non valida");
+    void writeValue(T value, int index) {
+        if (index < 0 || index >= size) {
+            throw out_of_range("Index error");
         }
-        array[posizione] = elemento;
+        array[index] = value;
     }
 
-    T primolista() const {
+    T firstInList() const {
         return array[0];
     }
 
-    bool finelista(int posizione) const {
-        return posizione == size;
+    bool endList(int index) const {
+        return index == size;
     }
 
-    int succlista(int posizione) const {
-        if (posizione < 0 || posizione >= size) {
-            throw out_of_range("Posizione non valida");
+    int nextValue(int index) const {
+        if (index < 0 || index >= size) {
+            throw out_of_range("Index error");
         }
-        return posizione + 1;
+        return array[index + 1];
     }
 
-    int predlista(int posizione) const {
-        if (posizione <= 0 || posizione > size) {
-            throw out_of_range("Posizione non valida");
+    int previousValue(int index) const {
+        if (index <= 0 || index > size) {
+            throw out_of_range("Index error");
         }
-        return posizione - 1;
+        return array[index - 1];
     }
 
-    void inslista(T elemento, int posizione) {
-        if (posizione < 0 || posizione > size || size >= MAX_SIZE) {
-            throw out_of_range("Posizione non valida");
+    void insertValue(T value, int index) {
+        if (index < 0 || index > size || size >= MAX_SIZE) {
+            throw out_of_range("Index error");
         }
-        for (int i = size; i > posizione; --i) {
+        for (int i = size; i > index; --i) {
             array[i] = array[i - 1];
         }
-        array[posizione] = elemento;
+        array[index] = value;
         ++size;
     }
 
-    void canclista(int posizione) {
-        if (posizione < 0 || posizione >= size) {
-            throw out_of_range("Posizione non valida");
+    void deleteList(int index) {
+        if (index < 0 || index >= size) {
+            throw out_of_range("Index error");
         }
-        for (int i = posizione; i < size - 1; ++i) {
+        for (int i = index; i < size - 1; ++i) {
             array[i] = array[i + 1];
         }
         --size;
     }
 
-    void stampaLista() const {
+    void printList() const {
         for (int i = 0; i < size; ++i) {
             cout << array[i] << " ";
         }
