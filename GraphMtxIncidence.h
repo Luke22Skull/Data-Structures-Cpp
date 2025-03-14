@@ -1,111 +1,120 @@
 #ifndef GRAPHMTXINCIDENCE_H
 #define GRAPHMTXINCIDENCE_H
-
 #include <iostream>
 #include <stdexcept>
 
 template <class T>
-class GrafoMatIncidenza {
+class IncidenceMatrixGraph {
 private:
-    static const int MAX_NODI = 100;
-    static const int MAX_ARCHI = 200;
-    int matrice[MAX_NODI][MAX_ARCHI]; // Matrice di incidenza
-    T valori[MAX_NODI]; // Valori dei nodi
-    int numNodi;
-    int numArchi;
+    static const int MAX_NODES = 100;
+    static const int MAX_EDGES = 200;
+    int matrix[MAX_NODES][MAX_EDGES]; // Incidence matrix
+    T values[MAX_NODES]; // Node values
+    int numNodes;
+    int numEdges;
 
-    int trovaIndiceNodo(T valore) const {
-        for (int i = 0; i < numNodi; ++i) {
-            if (valori[i] == valore)
+    // Function to find the index of a node
+    int findNodeIndex(T value) const {
+        for (int i = 0; i < numNodes; ++i) {
+            if (values[i] == value)
                 return i;
         }
         return -1;
     }
 
 public:
-    GrafoMatIncidenza() : numNodi(0), numArchi(0) {
-        for (int i = 0; i < MAX_NODI; ++i) {
-            valori[i] = -1;
-            for (int j = 0; j < MAX_ARCHI; ++j) {
-                matrice[i][j] = 0;
+    IncidenceMatrixGraph() : numNodes(0), numEdges(0) {
+        for (int i = 0; i < MAX_NODES; ++i) {
+            values[i] = -1;
+            for (int j = 0; j < MAX_EDGES; ++j) {
+                matrix[i][j] = 0;
             }
         }
     }
 
-    bool vuoto() const {
-        return numNodi == 0;
+    // Check if the graph is empty
+    bool isEmpty() const {
+        return numNodes == 0;
     }
 
-    void insnodo(T valore) {
-        if (numNodi >= MAX_NODI)
-            throw std::overflow_error("Numero massimo di nodi raggiunto");
-        valori[numNodi++] = valore;
+    // Insert a new node
+    void insertNode(T value) {
+        if (numNodes >= MAX_NODES)
+            throw std::overflow_error("Maximum number of nodes reached");
+        values[numNodes++] = value;
     }
 
-    void insarco(T val1, T val2) {
-        int u = trovaIndiceNodo(val1);
-        int v = trovaIndiceNodo(val2);
-        if (u == -1 || v == -1 || numArchi >= MAX_ARCHI)
-            throw std::out_of_range("Nodo o arco non valido");
-        matrice[u][numArchi] = 1;
-        matrice[v][numArchi] = -1;
-        numArchi++;
+    // Insert a new edge
+    void insertEdge(T val1, T val2) {
+        int u = findNodeIndex(val1);
+        int v = findNodeIndex(val2);
+        if (u == -1 || v == -1 || numEdges >= MAX_EDGES)
+            throw std::out_of_range("Invalid node or edge");
+        matrix[u][numEdges] = 1;
+        matrix[v][numEdges] = -1;
+        numEdges++;
     }
 
-    void cancnodo(T valore) {
-        int nodo = trovaIndiceNodo(valore);
-        if (nodo == -1)
-            throw std::invalid_argument("Nodo non trovato");
-        valori[nodo] = -1;
-        for (int j = 0; j < numArchi; ++j) {
-            matrice[nodo][j] = 0;
+    // Delete a node
+    void deleteNode(T value) {
+        int node = findNodeIndex(value);
+        if (node == -1)
+            throw std::invalid_argument("Node not found");
+        values[node] = -1;
+        for (int j = 0; j < numEdges; ++j) {
+            matrix[node][j] = 0;
         }
     }
 
-    void cancarco(int indiceArco) {
-        if (indiceArco >= numArchi)
-            throw std::out_of_range("Arco non valido");
-        for (int i = 0; i < numNodi; ++i) {
-            matrice[i][indiceArco] = 0;
+    // Delete an edge
+    void deleteEdge(int edgeIndex) {
+        if (edgeIndex >= numEdges)
+            throw std::out_of_range("Invalid edge");
+        for (int i = 0; i < numNodes; ++i) {
+            matrix[i][edgeIndex] = 0;
         }
     }
 
-    void adiacenti(T valore) const {
-        int nodo = trovaIndiceNodo(valore);
-        if (nodo == -1)
-            throw std::invalid_argument("Nodo non trovato");
-        for (int j = 0; j < numArchi; ++j) {
-            if (matrice[nodo][j] != 0) {
-                for (int i = 0; i < numNodi; ++i) {
-                    if (matrice[i][j] != 0 && i != nodo)
-                        std::cout << valori[i] << " ";
+    // Print adjacent nodes of a given node
+    void printAdjacents(T value) const {
+        int node = findNodeIndex(value);
+        if (node == -1)
+            throw std::invalid_argument("Node not found");
+        for (int j = 0; j < numEdges; ++j) {
+            if (matrix[node][j] != 0) {
+                for (int i = 0; i < numNodes; ++i) {
+                    if (matrix[i][j] != 0 && i != node)
+                        std::cout << values[i] << " ";
                 }
             }
         }
         std::cout << std::endl;
     }
 
-    bool esistenodo(T valore) const {
-        return trovaIndiceNodo(valore) != -1;
+    // Check if a node exists
+    bool nodeExists(T value) const {
+        return findNodeIndex(value) != -1;
     }
 
-    bool esistearco(T val1, T val2) const {
-        int u = trovaIndiceNodo(val1);
-        int v = trovaIndiceNodo(val2);
+    // Check if an edge exists
+    bool edgeExists(T val1, T val2) const {
+        int u = findNodeIndex(val1);
+        int v = findNodeIndex(val2);
         if (u == -1 || v == -1)
-            throw std::out_of_range("Nodo non valido");
-        for (int j = 0; j < numArchi; ++j) {
-            if (matrice[u][j] == 1 && matrice[v][j] == -1)
+            throw std::out_of_range("Invalid node");
+        for (int j = 0; j < numEdges; ++j) {
+            if (matrix[u][j] == 1 && matrix[v][j] == -1)
                 return true;
         }
         return false;
     }
 
-    void stampamatrice() const {
-        std::cout << "Matrice di Incidenza:\n";
-        for (int i = 0; i < numNodi; ++i) {
-            for (int j = 0; j < numArchi; ++j) {
-                std::cout << matrice[i][j] << " ";
+    // Print the incidence matrix
+    void printMatrix() const {
+        std::cout << "Incidence Matrix:\n";
+        for (int i = 0; i < numNodes; ++i) {
+            for (int j = 0; j < numEdges; ++j) {
+                std::cout << matrix[i][j] << " ";
             }
             std::cout << std::endl;
         }
@@ -113,4 +122,3 @@ public:
 };
 
 #endif
-

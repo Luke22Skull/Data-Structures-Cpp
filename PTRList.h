@@ -1,6 +1,5 @@
 #ifndef PTRLIST_H
 #define PTRLIST_H
-
 #include <iostream>
 #include <stdexcept>
 using namespace std;
@@ -8,105 +7,115 @@ using namespace std;
 template <typename T>
 class PTRList {
 private:
-    struct Nodo {
+    struct Node { // Node structure
         T data;
-        Nodo* next;
-        Nodo(T value, Nodo* n = nullptr) : data(value), next(n) {}
+        Node* next;
+        Node(T value, Node* n = nullptr) : data(value), next(n) {}
     };
+    Node* head; // Head of the list
 
-    Nodo* head;
-
-    bool itHasNext (Nodo* posizione) {return posizione->next;};
+    // Check if the node has a next node
+    bool itHasNext (Node* position) {return position->next;};
 
 public:
-    PTRList() : head(nullptr) {}
+    PTRList() : head(nullptr) {} // Constructor
     ~PTRList() {
-        while (!listavuota())
-            canclista(primolista());
+        while (!isEmptyList())
+            deleteList(firstList());
     }
 
-    bool listavuota() const {
+    // Check if the list is empty
+    bool isEmptyList() const {
         return head == nullptr;
     }
 
-    Nodo* buildNode(T value) {return new Nodo(value, nullptr);};
-    void setNext (Nodo* from, Nodo* to) {(from && to) ? from->next = to : throw invalid_argument("setH: Nodo non valido");};
-    void setHead (Nodo* newHead) {newHead ? head = newHead : throw invalid_argument("setH: Nodo non valido");};
+    // Build a new node
+    Node* buildNode(T value) {return new Node(value, nullptr);};
 
-    T leggilista(Nodo* posizione) const {
-        if (!posizione) {
-            throw out_of_range("leggi: Posizione non valida");
+    // Set the next node
+    void setNext (Node* from, Node* to) {(from && to) ? from->next = to : throw invalid_argument("setH: Invalid node");};
+
+    // Set the head of the list
+    void setHead (Node* newHead) {newHead ? head = newHead : throw invalid_argument("setH: Invalid node");};
+
+    // Read the value of a node
+    T readList(Node* position) const {
+        if (!position) {
+            throw out_of_range("read: Invalid position");
         }
-        return posizione->data;
+        return position->data;
     }
 
-    void scrivilista(T elemento, Nodo* posizione) {
-        if (!posizione) {
-            throw out_of_range("scrivi: Posizione non valida");
+    // Write a value to a node
+    void writeList(T element, Node* position) {
+        if (!position) {
+            throw out_of_range("write: Invalid position");
         }
-        posizione->data = elemento;
+        position->data = element;
     }
 
-    Nodo* primolista() const {
+    // Get the first node of the list
+    Node* firstList() const {
         return head;
     }
 
-    bool finelista(Nodo* posizione) const {
-        return posizione->next == nullptr;
+    // Check if the node is the last node
+    bool endList(Node* position) const {
+        return position->next == nullptr;
     }
 
-    Nodo* succlista(Nodo* posizione) const {
-        if (!posizione) {
-            throw out_of_range("succ: Posizione non valida");
+    // Get the next node
+    Node* nextList(Node* position) const {
+        if (!position) {
+            throw out_of_range("next: Invalid position");
         }
-        return posizione->next;
+        return position->next;
     }
 
-    Nodo* predlista(Nodo* posizione) const {
-        if (posizione == head || !head) {
+    // Get the previous node
+    Node* prevList(Node* position) const {
+        if (position == head || !head) {
             return nullptr;
-            // throw out_of_range("Posizione non valida");
         }
-        Nodo* temp = head;
-        while (temp->next != posizione) {
+        Node* temp = head;
+        while (temp->next != position) {
             temp = temp->next;
         }
         return temp;
     }
 
-    void inslista(T elemento, Nodo* posizione) {
-        if (posizione == nullptr) { // Inserimento in testa
-            head = new Nodo(elemento, head);
-        } else { // Inserimento dopo posizione
-            /* Nodo* tmp = posizione->next;
-            Nodo* nuovo = new Nodo(elemento, posizione->next);
-            nuovo->next = tmp;
-            */
-            if (itHasNext(posizione)) {
-                Nodo* tmp = posizione->next;
-                Nodo* newNode = new Nodo(elemento, nullptr);
-                posizione->next = newNode;
-                newNode->next = tmp;
+    // Insert a node into the list
+    void insertList(T element, Node* position) {
+        if (position == nullptr) { // Insert at the head
+            head = new Node(element, head);
+        } else { // Insert after the position
+            if (itHasNext(position)) {
+                Node* temp = position->next;
+                Node* newNode = new Node(element, nullptr);
+                position->next = newNode;
+                newNode->next = temp;
+            } else {
+                position->next = new Node(element, nullptr);
             }
-            else
-                posizione->next = new Nodo (elemento, nullptr);
         }
     }
 
-    void canclista(Nodo* posizione) {
-        if (posizione == head) { // Cancella in testa
-            Nodo* temp = head;
+    // Delete a node from the list
+    void deleteList(Node* position) {
+        if (position == head) { // Delete at the head
+            Node* temp = head;
             head = head->next;
             delete temp;
-        } else { // Cancella dopo un nodo
-            Nodo* prev = predlista(posizione);
-            prev->next = posizione->next;
-            delete posizione;
+        } else { // Delete after a node
+            Node* prev = prevList(position);
+            prev->next = position->next;
+            delete position;
         }
     }
 
-    void stampaLista() const {
-        Nodo* temp = head;
+    // Print the list
+    void printList() const {
+        Node* temp = head;
         while (temp) {
             cout << temp->data << " ";
             temp = temp->next;
@@ -114,4 +123,5 @@ public:
         cout << endl;
     }
 };
+
 #endif

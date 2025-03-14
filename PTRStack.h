@@ -1,23 +1,23 @@
 #ifndef PTRSTACK_H
 #define PTRSTACK_H
-
 #include <iostream>
 #include <stdexcept>
 
 template <typename T>
 class PTR_Stack {
 public:
-    PTR_Stack() : top(nullptr) {}
-
+    PTR_Stack() : top(nullptr) {} // Constructor
     ~PTR_Stack() {
         while (!isEmptyStack())
             popStack();
     }
 
+    // Check if the stack is empty
     bool isEmptyStack() {
         return top == nullptr;
     }
 
+    // Read the top element of the stack
     T readStack() {
         if (!isEmptyStack())
             return this->top->getValue();
@@ -25,15 +25,17 @@ public:
             throw std::out_of_range("Stack is empty");
     }
 
+    // Push an element onto the stack
     void pushStack(T element) {
-        auto* newNode = new Nodo(element);
+        auto* newNode = new Node(element);
         newNode->next = top;
         top = newNode;
     }
 
+    // Pop the top element from the stack
     void popStack() {
         if (!isEmptyStack()) {
-            Nodo* temp = this->top;
+            Node* temp = this->top;
             top = top->next;
             delete temp;
         } else {
@@ -42,17 +44,16 @@ public:
     }
 
 private:
-    // Nodo per Stack e Code
-    struct Nodo {
+    // Node structure for Stack
+    struct Node {
         T data;
-        Nodo* next;
-
-        explicit Nodo(T value) : data(value), next(nullptr) {}
-        Nodo(T value, Nodo* next) : data(value), next(next) {}
-
+        Node* next;
+        explicit Node(T value) : data(value), next(nullptr) {}
+        Node(T value, Node* next) : data(value), next(next) {}
         T getValue() { return this->data; }
     };
-    
-    Nodo* top;
+
+    Node* top; // Top of the stack
 };
+
 #endif

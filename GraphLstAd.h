@@ -1,127 +1,136 @@
 #ifndef GRAPHLSTAD_H
 #define GRAPHLSTAD_H
-
 #include <iostream>
 #include <stdexcept>
 
 template <class T>
-class GrafoListaAdiacenza {
+class AdjacencyListGraph {
 private:
-    static const int MAX_NODI = 100;
-    struct Nodo {
-        T valore;
-        Nodo* prossimo;
-        Nodo(T val) : valore(val), prossimo(nullptr) {}
-    };
-    
-    Nodo* adiacenze[MAX_NODI]; // Array di puntatori a liste di adiacenza
-    T valori[MAX_NODI]; // Valori dei nodi
-    int numNodi;
+    static const int MAX_NODES = 100;
 
-    int trovaIndiceNodo(T valore) const {
-        for (int i = 0; i < numNodi; ++i) {
-            if (valori[i] == valore)
+    struct Node { // Node structure
+        T value;
+        Node* next;
+        Node(T val) : value(val), next(nullptr) {}
+    };
+
+    Node* adjacents[MAX_NODES]; // Array of pointers to adjacency lists
+    T values[MAX_NODES]; // Node values
+    int numNodes;
+
+    // Function to find the index of a node
+    int findNodeIndex(T value) const {
+        for (int i = 0; i < numNodes; ++i) {
+            if (values[i] == value)
                 return i;
         }
         return -1;
     }
 
 public:
-    GrafoListaAdiacenza() : numNodi(0) {
-        for (int i = 0; i < MAX_NODI; ++i) {
-            adiacenze[i] = nullptr;
+    AdjacencyListGraph() : numNodes(0) {
+        for (int i = 0; i < MAX_NODES; ++i) {
+            adjacents[i] = nullptr;
         }
     }
 
-    bool vuoto() const {
-        return numNodi == 0;
+    // Check if the graph is empty
+    bool isEmpty() const {
+        return numNodes == 0;
     }
 
-    void insnodo(T valore) {
-        if (numNodi >= MAX_NODI)
-            throw std::overflow_error("Numero massimo di nodi raggiunto");
-        valori[numNodi++] = valore;
+    // Insert a new node
+    void insertNode(T value) {
+        if (numNodes >= MAX_NODES)
+            throw std::overflow_error("Maximum number of nodes reached");
+        values[numNodes++] = value;
     }
 
-    void insarco(T val1, T val2) {
-        int u = trovaIndiceNodo(val1);
-        int v = trovaIndiceNodo(val2);
+    // Insert a new edge
+    void insertEdge(T val1, T val2) {
+        int u = findNodeIndex(val1);
+        int v = findNodeIndex(val2);
         if (u == -1 || v == -1)
-            throw std::out_of_range("Nodo non valido");
-        Nodo* nuovo = new Nodo(val2);
-        nuovo->prossimo = adiacenze[u];
-        adiacenze[u] = nuovo;
+            throw std::out_of_range("Invalid node");
+        Node* newNode = new Node(val2);
+        newNode->next = adjacents[u];
+        adjacents[u] = newNode;
     }
 
-    void cancnodo(T valore) {
-        int nodo = trovaIndiceNodo(valore);
-        if (nodo == -1)
-            throw std::invalid_argument("Nodo non trovato");
-        while (adiacenze[nodo] != nullptr) {
-            Nodo* temp = adiacenze[nodo];
-            adiacenze[nodo] = adiacenze[nodo]->prossimo;
+    // Delete a node
+    void deleteNode(T value) {
+        int node = findNodeIndex(value);
+        if (node == -1)
+            throw std::invalid_argument("Node not found");
+        while (adjacents[node] != nullptr) {
+            Node* temp = adjacents[node];
+            adjacents[node] = adjacents[node]->next;
             delete temp;
         }
-        valori[nodo] = T{};
+        values[node] = T{};
     }
 
-    void cancarco(T val1, T val2) {
-        int u = trovaIndiceNodo(val1);
-        // int v = trovaIndiceNodo(val2);
+    // Delete an edge
+    void deleteEdge(T val1, T val2) {
+        int u = findNodeIndex(val1);
         if (u == -1)
-            throw std::out_of_range("Nodo non valido");
-        Nodo* temp = adiacenze[u];
-        Nodo* prev = nullptr;
-        while (temp != nullptr && temp->valore != val2) {
+            throw std::out_of_range("Invalid node");
+        Node* temp = adjacents[u];
+        Node* prev = nullptr;
+        while (temp != nullptr && temp->value != val2) {
             prev = temp;
-            temp = temp->prossimo;
+            temp = temp->next;
         }
         if (temp != nullptr) {
             if (prev != nullptr)
-                prev->prossimo = temp->prossimo;
+                prev->next = temp->next;
             else
-                adiacenze[u] = temp->prossimo;
+                adjacents[u] = temp->next;
             delete temp;
         }
     }
 
-    void adiacenti(T valore) const {
-        int nodo = trovaIndiceNodo(valore);
-        if (nodo == -1)
-            throw std::invalid_argument("Nodo non trovato");
-        Nodo* temp = adiacenze[nodo];
+    // Print adjacent nodes of a given node
+    void printAdjacents(T value) const {
+        int node = findNodeIndex(value);
+        if (node == -1)
+            throw std::invalid_argument("Node not found");
+        Node* temp = adjacents[node];
         while (temp != nullptr) {
-            std::cout << temp->valore << " ";
-            temp = temp->prossimo;
+            std::cout << temp->value << " ";
+            temp = temp->next;
         }
         std::cout << std::endl;
     }
 
-    bool esistenodo(T valore) const {
-        return trovaIndiceNodo(valore) != -1;
+    // Check if a node exists
+    bool nodeExists(T value) const {
+        return findNodeIndex(value) != -1;
     }
 
-    bool esistearco(T val1, T val2) const {
-        int u = trovaIndiceNodo(val1);
+    // Check if an edge exists
+    bool edgeExists(T val1, T val2) const {
+        int u = findNodeIndex(val1);
         if (u == -1)
-            throw std::out_of_range("Nodo non valido");
-        Nodo* temp = adiacenze[u];
+            throw std::out_of_range("Invalid node");
+        Node* temp = adjacents[u];
         while (temp != nullptr) {
-            if (temp->valore == val2)
+            if (temp->value == val2)
                 return true;
-            temp = temp->prossimo;
+            temp = temp->next;
         }
         return false;
     }
 
-    void stampalista() const {
-        for (int i = 0; i < numNodi; ++i) {
-            if (valori[i] != T{}) {
-                std::cout << "Nodo " << valori[i] << ": ";
-                Nodo* temp = adiacenze[i];
+    // Print the adjacency list
+    void printList() const {
+        for (int i = 0; i < numNodes; ++i) {
+            if (values[i] != T{}) {
+                std::cout << "Node " << values[i] << ": ";
+                Node* temp = adjacents[i];
                 while (temp != nullptr) {
-                    std::cout << temp->valore << " ";
-                    temp = temp->prossimo;
+                    std::cout << temp->value << " ";
+                    temp = temp->next;
                 }
                 std::cout << std::endl;
             }
@@ -130,4 +139,3 @@ public:
 };
 
 #endif
-

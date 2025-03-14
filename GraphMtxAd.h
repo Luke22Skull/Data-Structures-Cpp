@@ -1,20 +1,20 @@
-#ifndef GRAPHEXTMTX_H
-#define GRAPHEXTMTX_H 
+#ifndef ADJMTXGRAPH_H
+#define ADJMTXGRAPH_H
 #include <iostream>
 #include <stdexcept>
-#include "PTRQueue.h"
 #include "PTRStack.h"
+#include "PTRQueue.h"
 
 template <class T>
-class ExtendedAdjacencyMatrixGraph {
+class AdjacencyMatrixGraph {
 private:
     static const int MAX_NODES = 100;
-    int matrix[MAX_NODES][MAX_NODES]; // Adjacency matrix
+    bool matrix[MAX_NODES][MAX_NODES]; // Adjacency matrix
     T values[MAX_NODES]; // Node values
     int numNodes;
 
     // Function to find the index of a node
-    int findNodeIndex(T value) const {
+    int findNode(const T& value) const {
         for (int i = 0; i < numNodes; ++i) {
             if (values[i] == value)
                 return i;
@@ -23,12 +23,12 @@ private:
     }
 
 public:
-    ExtendedAdjacencyMatrixGraph() : numNodes(0) {
+    AdjacencyMatrixGraph() : numNodes(0) {
         for (int i = 0; i < MAX_NODES; ++i) {
             for (int j = 0; j < MAX_NODES; ++j) {
-                matrix[i][j] = 0;
+                matrix[i][j] = false;
             }
-            values[i] = -1;
+            values[i] = T(); // Initialize with the default value of type T
         }
     }
 
@@ -38,83 +38,75 @@ public:
     }
 
     // Insert a new node
-    void insertNode(T value) {
+    void insertNode(const T& value) {
         if (numNodes >= MAX_NODES)
             throw std::overflow_error("Maximum number of nodes reached");
         values[numNodes] = value;
         ++numNodes;
     }
 
-    // Insert a new edge with a weight
-    void insertEdge(int u, int v, int weight = 1) {
+    // Insert a new edge
+    void insertEdge(int u, int v) {
         if (u >= numNodes || v >= numNodes)
-            throw std::out_of_range("Invalid node");
-        if (weight <= 0)
-            throw std::invalid_argument("Weight must be positive");
-        matrix[u][v] = weight;
+            throw std::out_of_range("insertEdge: Invalid node");
+        matrix[u][v] = true;
     }
 
     // Delete a node
-    void deleteNode(T value) {
-        int node = findNodeIndex(value);
+    void deleteNode(const T& value) {
+        int node = findNode(value);
         if (node == -1)
             throw std::invalid_argument("Node not found");
         for (int i = 0; i < numNodes; ++i) {
-            matrix[i][node] = 0;
-            matrix[node][i] = 0;
+            matrix[i][node] = false;
+            matrix[node][i] = false;
         }
-        values[node] = -1;
+        values[node] = T(); // Reset to the default value of type T
+        numNodes--;
     }
 
     // Delete an edge
     void deleteEdge(int u, int v) {
         if (u >= numNodes || v >= numNodes)
-            throw std::out_of_range("Invalid node");
-        matrix[u][v] = 0;
+            throw std::out_of_range("deleteEdge: Invalid node");
+        matrix[u][v] = false;
     }
 
     // Print adjacent nodes of a given node
-    void printAdjacents(T value) const {
-        int node = findNodeIndex(value);
+    void printAdjacents(const T& value) const {
+        int node = findNode(value);
         if (node == -1)
             throw std::invalid_argument("Node not found");
         for (int i = 0; i < numNodes; ++i) {
-            if (matrix[node][i] > 0)
+            if (matrix[node][i])
                 std::cout << values[i] << " ";
         }
         std::cout << std::endl;
     }
 
     // Check if a node exists
-    bool nodeExists(T value) const {
-        return findNodeIndex(value) != -1;
+    bool nodeExists(const T& value) const {
+        return findNode(value) != -1;
     }
 
     // Check if an edge exists
     bool edgeExists(int u, int v) const {
         if (u >= numNodes || v >= numNodes)
-            throw std::out_of_range("Invalid node");
-        return matrix[u][v] > 0;
+            throw std::out_of_range("edgeExists: Invalid node");
+        return matrix[u][v];
     }
 
     // Read the index of a node
-    int readNode(T value) const {
-        int node = findNodeIndex(value);
+    int readNode(const T& value) const {
+        int node = findNode(value);
         if (node == -1)
             throw std::invalid_argument("Node not found");
         return node;
     }
 
-    // Read the weight of an edge
-    int readWeight(int u, int v) const {
-        if (u >= numNodes || v >= numNodes)
-            throw std::out_of_range("Invalid node");
-        return matrix[u][v];
-    }
-
     // Print the adjacency matrix
     void printMatrix() const {
-        std::cout << "Extended Adjacency Matrix:\n";
+        std::cout << "Adjacency Matrix:\n";
         for (int i = 0; i < numNodes; ++i) {
             for (int j = 0; j < numNodes; ++j) {
                 std::cout << matrix[i][j] << " ";
@@ -124,8 +116,8 @@ public:
     }
 
     // Breadth-first search
-    void bfs(T initialValue, T searchValue) {
-        int initialNode = findNodeIndex(initialValue);
+    void bfs(const T& initialValue, const T& searchValue) {
+        int initialNode = findNode(initialValue);
         if (initialNode == -1)
             throw std::invalid_argument("Initial node not found");
         bool visited[MAX_NODES] = {false};
@@ -140,7 +132,7 @@ public:
                 return;
             }
             for (int i = 0; i < numNodes; ++i) {
-                if (matrix[currentNode][i] > 0 && !visited[i]) {
+                if (matrix[currentNode][i] && !visited[i]) {
                     queue.pushTail(i);
                     visited[i] = true;
                 }
@@ -150,8 +142,8 @@ public:
     }
 
     // Depth-first search
-    void dfs(T initialValue, T searchValue) {
-        int initialNode = findNodeIndex(initialValue);
+    void dfs(const T& initialValue, const T& searchValue) {
+        int initialNode = findNode(initialValue);
         if (initialNode == -1)
             throw std::invalid_argument("Initial node not found");
         bool visited[MAX_NODES] = {false};
@@ -167,7 +159,7 @@ public:
                     return;
                 }
                 for (int i = 0; i < numNodes; ++i) {
-                    if (matrix[currentNode][i] > 0 && !visited[i]) {
+                    if (matrix[currentNode][i] && !visited[i]) {
                         stack.pushStack(i);
                     }
                 }

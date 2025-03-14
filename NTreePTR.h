@@ -1,6 +1,5 @@
-#ifndef NTREEPTR_H
-#define NTREEPTR_H
-
+#ifndef PTR_NTREE_H 
+#define PTR_NTREE_H
 #include <iostream>
 #include <stdexcept>
 using namespace std;
@@ -8,161 +7,169 @@ using namespace std;
 template <class T>
 class PTR_NTree {
 private:
-    struct TreeNode {
-        T dato;
-        TreeNode** figli;
-        int numero_figli;
-        int livello;
-
-        TreeNode(T value, int max_figli, int lvl) {
-            dato = value;
-            figli = new TreeNode*[max_figli]{};
-            numero_figli = 0;
-            livello = lvl;
+    struct TreeNode { // Node structure
+        T data;
+        TreeNode** children;
+        int num_children;
+        int level;
+        TreeNode(T value, int max_children, int lvl) {
+            data = value;
+            children = new TreeNode*[max_children]{};
+            num_children = 0;
+            level = lvl;
         }
-
         ~TreeNode() {
-            delete[] figli;
+            delete[] children;
         }
     };
-
     TreeNode* root;
-    int grado;
+    int degree;
 
-    void CancellaSottoalbero(TreeNode* nodo) {
-        if (!nodo) return;
-        for (int i = 0; i < nodo->numero_figli; i++) {
-            CancellaSottoalbero(nodo->figli[i]);
+    // Function to delete a subtree
+    void auxDeleteSubtree(TreeNode* node) {
+        if (!node) return;
+        for (int i = 0; i < node->num_children; i++) {
+            deleteSubtree(node->children[i]);
         }
-        // nodo = nullptr;
-        if (isFoglia(nodo)) {
+        if (isLeaf(node)) {
             TreeNode** travelerPTR;
-            TreeNode* padre = getFather(nodo);
-            travelerPTR = &padre;
-
-            (*travelerPTR)->figli[getIndiceFiglio(padre, nodo)] = nullptr;
-
-            delete nodo;
-            nodo = nullptr;
+            TreeNode* parent = getFather(node);
+            travelerPTR = &parent;
+            (*travelerPTR)->children[getChildIndex(parent, node)] = nullptr;
+            delete node;
+            node = nullptr;
             return;
         }
     }
 
-    TreeNode* trovaPadre(TreeNode* nodo, TreeNode* target) {
-        if (!nodo || nodo->numero_figli == 0) return nullptr;
-        for (int i = 0; i < nodo->numero_figli; i++) {
-            if (nodo->figli[i] == target) return nodo;
-            TreeNode* trovato = trovaPadre(nodo->figli[i], target);
-            if (trovato) return trovato;
+    // Function to find the parent of a node
+    TreeNode* findParent(TreeNode* node, TreeNode* target) {
+        if (!node || node->num_children == 0) return nullptr;
+        for (int i = 0; i < node->num_children; i++) {
+            if (node->children[i] == target) return node;
+            TreeNode* found = findParent(node->children[i], target);
+            if (found) return found;
         }
         return nullptr;
     }
 
-    int getIndiceFiglio(TreeNode* padre, TreeNode* figlio) {
-        if (!padre || !figlio) throw invalid_argument("Nodi nulli.");
-        for (int i = 0; i < padre->numero_figli; i++) {
-            if (padre->figli[i] == figlio) return i;
+    // Function to get the index of a child node
+    int getChildIndex(TreeNode* parent, TreeNode* child) {
+        if (!parent || !child) throw invalid_argument("Null nodes.");
+        for (int i = 0; i < parent->num_children; i++) {
+            if (parent->children[i] == child) return i;
         }
-        return -1; // Il nodo figlio non è stato trovato
+        return -1; // Child node not found
     }
 
-    void stampa(TreeNode* nodo, int livello) {
-        if (!nodo) return;
-        for (int i = 0; i < livello; i++) cout << "  "; // Indentazione
-        cout << nodo->dato << endl;
-        for (int i = 0; i < nodo->numero_figli; i++) {
-            stampa(nodo->figli[i], livello + 1);
+    // Function to print the tree
+    void print(TreeNode* node, int level) {
+        if (!node) return;
+        for (int i = 0; i < level; i++) cout << " "; // Indentation
+        cout << node->data << endl;
+        for (int i = 0; i < node->num_children; i++) {
+            print(node->children[i], level + 1);
         }
     }
 
 public:
-    PTR_NTree(int num_max_figli) : root(nullptr), grado(num_max_figli) {}
-
+    PTR_NTree(int max_num_children) : root(nullptr), degree(max_num_children) {}
     ~PTR_NTree() {
-        CancellaSottoalbero(root);
+        deleteSubtree(root);
     }
 
-    bool alberoVuoto() {
+    // Check if the tree is empty
+    bool isEmptyTree() {
         return root == nullptr;
     }
 
-    void insRadice(T valore) {
-        if (root) throw runtime_error("La radice esiste già.");
-        root = new TreeNode(valore, grado, 0);
+    // Insert the root node
+    void insertRoot(T value) {
+        if (root) throw runtime_error("Root already exists.");
+        root = new TreeNode(value, degree, 0);
     }
 
+    // Get the root node
     TreeNode* getRoot() {
         return root;
     }
 
-    TreeNode* getFather(TreeNode* nodo) {
-        if (!nodo || nodo == root) return nullptr;
-        return trovaPadre(root, nodo);
+    // Get the parent of a node
+    TreeNode* getFather(TreeNode* node) {
+        if (!node || node == root) return nullptr;
+        return findParent(root, node);
     }
 
-    bool isFoglia(TreeNode* nodo) {
-        if (!nodo) throw invalid_argument("Nodo nullo.");
-        return nodo->numero_figli == 0;
+    // Check if a node is a leaf
+    bool isLeaf(TreeNode* node) {
+        if (!node) throw invalid_argument("Null node.");
+        return node->num_children == 0;
     }
 
-    TreeNode* primoFiglio(TreeNode* nodo) {
-        if (!nodo || nodo->numero_figli == 0) return nullptr;
-        return nodo->figli[0];
+    // Get the first child of a node
+    TreeNode* firstChild(TreeNode* node) {
+        if (!node || node->num_children == 0) return nullptr;
+        return node->children[0];
     }
 
-    TreeNode* ultimoFratello(TreeNode* nodo) {
-        if (!nodo || !root) return nullptr;
+    // Get the last sibling of a node
+    TreeNode* lastSibling(TreeNode* node) {
+        if (!node || !root) return nullptr;
         TreeNode* parent = nullptr;
-        for (TreeNode* n = root; n; n = primoFiglio(n)) {
-            for (int i = 0; i < n->numero_figli; i++) {
-                if (n->figli[i] == nodo) {
+        for (TreeNode* n = root; n; n = firstChild(n)) {
+            for (int i = 0; i < n->num_children; i++) {
+                if (n->children[i] == node) {
                     parent = n;
                     break;
                 }
             }
         }
-        return parent ? parent->figli[parent->numero_figli - 1] : nullptr;
+        return parent ? parent->children[parent->num_children - 1] : nullptr;
     }
 
-    TreeNode* succFratello(TreeNode* nodo) {
-        if (!nodo || !root) return nullptr;
+    // Get the next sibling of a node
+    TreeNode* nextSibling(TreeNode* node) {
+        if (!node || !root) return nullptr;
         TreeNode* parent = nullptr;
-        for (TreeNode* n = root; n; n = primoFiglio(n)) {
-            for (int i = 0; i < n->numero_figli - 1; i++) {
-                if (n->figli[i] == nodo) {
-                    return n->figli[i + 1];
+        for (TreeNode* n = root; n; n = firstChild(n)) {
+            for (int i = 0; i < n->num_children - 1; i++) {
+                if (n->children[i] == node) {
+                    return n->children[i + 1];
                 }
             }
         }
         return nullptr;
     }
 
-    void insPrimoSottoalbero(TreeNode* nodo, PTR_NTree<T>& sottoalbero) {
-        if (!nodo || !sottoalbero.root) throw invalid_argument("Nodo o sottoalbero nullo.");
-        if (nodo->numero_figli >= grado) throw runtime_error("Numero massimo di figli raggiunto.");
-        for (int i = nodo->numero_figli; i > 0; i--) {
-            nodo->figli[i] = nodo->figli[i - 1];
+    // Insert the first subtree
+    void insertFirstSubtree(TreeNode* node, PTR_NTree<T>& subtree) {
+        if (!node || !subtree.root) throw invalid_argument("Null node or subtree.");
+        if (node->num_children >= degree) throw runtime_error("Maximum number of children reached.");
+        for (int i = node->num_children; i > 0; i--) {
+            node->children[i] = node->children[i - 1];
         }
-        nodo->figli[0] = sottoalbero.root;
-        nodo->numero_figli++;
-        sottoalbero.root = nullptr;
+        node->children[0] = subtree.root;
+        node->num_children++;
+        subtree.root = nullptr;
     }
 
-    void insSottoAlbero(TreeNode* nodo, PTR_NTree<T>& sottoalbero) {
-        if (!nodo || !sottoalbero.root) throw invalid_argument("Nodo o sottoalbero nullo.");
-        if (nodo->numero_figli >= grado) throw runtime_error("Numero massimo di figli raggiunto.");
-        nodo->figli[nodo->numero_figli++] = sottoalbero.root;
-        sottoalbero.root = nullptr;
+    // Insert a subtree
+    void insertSubtree(TreeNode* node, PTR_NTree<T>& subtree) {
+        if (!node || !subtree.root) throw invalid_argument("Null node or subtree.");
+        if (node->num_children >= degree) throw runtime_error("Maximum number of children reached.");
+        node->children[node->num_children++] = subtree.root;
+        subtree.root = nullptr;
     }
 
-    void cancSottoAlbero(TreeNode* nodo) {
-        if (!nodo) return;
-        CancellaSottoalbero(nodo);
-        // nodo = nullptr;
+    // Delete a subtree
+    void deleteSubtree(TreeNode* node) {
+        if (!node) return;
+        auxDeleteSubtree(node);
     }
 
-    void stampaAlbero () {
-        stampa(root, 0);
+    // Print the tree
+    void printTree() {
+        print(root, 0);
     }
 };
 

@@ -1,60 +1,54 @@
 #ifndef PRIORQUEUELIST_H
 #define PRIORQUEUELIST_H
-
 #include <iostream>
 #include "PTRList.h"
-
 using namespace std;
 
 template <typename T>
-class PriorCodaLista {
+class PriorQueueList {
 private:
-    PTRList<T> lista;
-
+    PTRList<T> list;
 public:
-    PriorCodaLista() {} // creaPriorCoda
-
-    ~PriorCodaLista() {
-        while (!lista.listavuota()) {
+    PriorQueueList() {} // createPriorQueue
+    ~PriorQueueList() {
+        while (!list.isEmptyList()) {
             deleteMin();
         }
     }
 
-    void inserisci(T elemento) { // inserisci
-        if (lista.listavuota()) {
-            lista.inslista(elemento, lista.primolista());
+    void insert(T element) { // insert
+        if (list.isEmptyList()) {
+            list.insertList(element, list.firstList());
             return;
-        }
-        else {
-            auto* posizione = lista.primolista();
-            if (elemento <= lista.leggilista(lista.primolista())) {
-                auto* newHead = lista.buildNode(elemento);
-                lista.setNext(newHead, lista.primolista());
-                lista.setHead(newHead);
+        } else {
+            auto* position = list.firstList();
+            if (element <= list.readList(list.firstList())) {
+                auto* newHead = list.buildNode(element);
+                list.setNext(newHead, list.firstList());
+                list.setHead(newHead);
                 return;
-            }
-            else {
-                while (!lista.finelista(posizione) && elemento >= lista.leggilista(lista.succlista(posizione))) {
-                    posizione = posizione->next; 
-                    cout << "pos: " << posizione->data << endl;
+            } else {
+                while (!list.endList(position) && element >= list.readList(list.nextList(position))) {
+                    position = position->next;
+                    cout << "pos: " << position->data << endl;
                 }
-                lista.inslista(elemento, posizione);
+                list.insertList(element, position);
             }
         }
     }
 
     T min() const { // min
-        if (lista.listavuota()) throw logic_error("Coda vuota");
-        return lista.leggilista(lista.primolista());
+        if (list.isEmptyList()) throw logic_error("Queue is empty");
+        return list.readList(list.firstList());
     }
 
     void deleteMin() { // deleteMin
-        if (lista.listavuota()) throw logic_error("Coda vuota");
-        lista.canclista(lista.primolista());
+        if (list.isEmptyList()) throw logic_error("Queue is empty");
+        list.deleteList(list.firstList());
     }
 
-    void stampaLista() const { // Debug: stampa la lista
-        lista.stampaLista();
+    void printList() const { // Debug: print the list
+        list.printList();
     }
 };
 

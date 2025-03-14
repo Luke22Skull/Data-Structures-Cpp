@@ -1,138 +1,126 @@
 #ifndef PRIORQUEUEBINTREE_H
 #define PRIORQUEUEBINTREE_H
-
 #include <iostream>
 #include <stdexcept>
 using namespace std;
 
 template <typename T>
-class PriorCodaAlbero {
+class PriorQueueTree {
 private:
-
-    struct Nodo {
+    struct Node { // Node structure
         T data;
-        Nodo* left;
-        Nodo* right;
-
-        Nodo(T value) : data(value), left(nullptr), right(nullptr) {}
+        Node* left;
+        Node* right;
+        Node(T value) : data(value), left(nullptr), right(nullptr) {}
     };
+    Node* root; // Root of the Min-Heap
 
-    Nodo* root; // Radice del Min-Heap
-
-    // Funzione ausiliaria per inserire un elemento rispettando la struttura del Min-Heap
-    void inserisciHeap(Nodo*& nodo, T elemento) {
-        if (!nodo) {
-            nodo = new Nodo(elemento);
+    // Auxiliary function to insert an element while maintaining the Min-Heap structure
+    void insertHeap(Node*& node, T element) {
+        if (!node) {
+            node = new Node(element);
             return;
         }
-        if (elemento < nodo->data) {
-            swap(nodo->data, elemento); // swap scambia 2 elementi
+        if (element < node->data) {
+            swap(node->data, element); // Swap two elements
         }
-        if (!nodo->left) {
-            inserisciHeap(nodo->left, elemento);
-        } else if (!nodo->right) {
-            inserisciHeap(nodo->right, elemento);
+        if (!node->left) {
+            insertHeap(node->left, element);
+        } else if (!node->right) {
+            insertHeap(node->right, element);
         } else {
-            // Inserimento nel sottoalbero con meno nodi
-            if (altezza(nodo->left) <= altezza(nodo->right)) {
-                inserisciHeap(nodo->left, elemento);
+            // Insert into the subtree with fewer nodes
+            if (height(node->left) <= height(node->right)) {
+                insertHeap(node->left, element);
             } else {
-                inserisciHeap(nodo->right, elemento);
+                insertHeap(node->right, element);
             }
         }
     }
 
-    // Funzione ausiliaria per trovare l'elemento minimo
-    T trovaMin(Nodo* nodo) const {
-        if (!nodo) throw logic_error("Coda vuota");
-        return nodo->data;
+    // Auxiliary function to find the minimum element
+    T findMin(Node* node) const {
+        if (!node) throw logic_error("Queue is empty");
+        return node->data;
     }
 
-    // Funzione ausiliaria per trovare il nodo padre
-    Nodo* trovaPadre(Nodo* nodo, Nodo* target) const {
-        if (!nodo || nodo == target) return nullptr;
-        if (nodo->left == target || nodo->right == target) return nodo;
-        Nodo* leftResult = trovaPadre(nodo->left, target);
+    // Auxiliary function to find the parent node
+    Node* findParent(Node* node, Node* target) const {
+        if (!node || node == target) return nullptr;
+        if (node->left == target || node->right == target) return node;
+        Node* leftResult = findParent(node->left, target);
         if (leftResult) return leftResult;
-        return trovaPadre(nodo->right, target);
+        return findParent(node->right, target);
     }
 
-    // Funzione ausiliaria per eliminare l'elemento minimo
-    void deleteMinHeap(Nodo*& nodo) {
-        if (!nodo) return;
-
-        if (!nodo->left && !nodo->right) {
-            // nodo = nullptr;
-            Nodo** travelerPTR; 
-            Nodo* padre = trovaPadre(root, nodo);
-            travelerPTR = &padre;
-
+    // Auxiliary function to delete the minimum element
+    void deleteMinHeap(Node*& node) {
+        if (!node) return;
+        if (!node->left && !node->right) {
+            Node** travelerPTR;
+            Node* parent = findParent(root, node);
+            travelerPTR = &parent;
             (*travelerPTR)->left = nullptr;
             (*travelerPTR)->right = nullptr;
-
-            delete nodo;
-            nodo = nullptr;
+            delete node;
+            node = nullptr;
             return;
         }
-
-        Nodo* minChild = nullptr;
-
-        if (nodo->left && nodo->right) {
-            minChild = (nodo->left->data < nodo->right->data) ? nodo->left : nodo->right;
+        Node* minChild = nullptr;
+        if (node->left && node->right) {
+            minChild = (node->left->data < node->right->data) ? node->left : node->right;
         } else {
-            minChild = nodo->left ? nodo->left : nodo->right;
+            minChild = node->left ? node->left : node->right;
         }
-
-        swap(nodo->data, minChild->data);
+        swap(node->data, minChild->data);
         deleteMinHeap(minChild);
     }
 
-    // Funzione per calcolare l'altezza di un nodo
-    int altezza(Nodo* nodo) const {
-        if (!nodo) return 0;
-        return 1 + max(altezza(nodo->left), altezza(nodo->right));
+    // Function to calculate the height of a node
+    int height(Node* node) const {
+        if (!node) return 0;
+        return 1 + max(height(node->left), height(node->right));
     }
 
-    // Funzione per stampare l'albero (per scopi di debug)
-    void stampaAlbero(Nodo* nodo, int depth = 0) const {
-        if (!nodo) return;
-        if (nodo->right)
-            stampaAlbero(nodo->right, depth + 1);
-        for (int i = 0; i < depth; ++i) cout << "  ";
-        cout << nodo->data << endl;
-        if (nodo->left)
-            stampaAlbero(nodo->left, depth + 1);
+    // Function to print the tree (for debugging purposes)
+    void printTree(Node* node, int depth = 0) const {
+        if (!node) return;
+        if (node->right)
+            printTree(node->right, depth + 1);
+        for (int i = 0; i < depth; ++i) cout << " ";
+        cout << node->data << endl;
+        if (node->left)
+            printTree(node->left, depth + 1);
     }
 
-    // Funzione per deallocare l'albero
-    void deleteSubBinTree(Nodo* nodo) {
-        if (!nodo) return;
-        deleteSubBinTree(nodo->left);
-        deleteSubBinTree(nodo->right);
-        delete nodo;
+    // Function to deallocate the tree
+    void deleteSubBinTree(Node* node) {
+        if (!node) return;
+        deleteSubBinTree(node->left);
+        deleteSubBinTree(node->right);
+        delete node;
     }
 
 public:
-    PriorCodaAlbero() : root(nullptr) {} // creaPriorCoda
-
-    ~PriorCodaAlbero() {
+    PriorQueueTree() : root(nullptr) {} // createPriorQueue
+    ~PriorQueueTree() {
         deleteSubBinTree(root);
     }
 
-    void inserisci(T elemento) { // inserisci
-        inserisciHeap(root, elemento);
+    void insert(T element) { // insert
+        insertHeap(root, element);
     }
 
     T min() const { // min
-        return trovaMin(root);
+        return findMin(root);
     }
 
     void deleteMin() { // deleteMin
         deleteMinHeap(root);
     }
 
-    void stampa() const { // Stampa l'albero per scopi di debug
-        stampaAlbero(root);
+    void print() const { // Print the tree for debugging purposes
+        printTree(root);
     }
 };
 
